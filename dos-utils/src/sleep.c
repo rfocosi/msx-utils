@@ -13,6 +13,7 @@ To generate 'sleep.com'
 #include <stdlib.h>
 #include "asm.h"
 #include "msx_fusion.h"
+#include "header/version.h"
 
 #define lcase(c) ((c) | 32)
 #define vprintf(msg) if(verbose_mode == 1) { printf(msg); }
@@ -42,12 +43,10 @@ Z80_registers regs;
 TIME time;
 DATE date;
 
-
-const char* app_version= "SLEEP v1.0\r\n";
+const char* app_version= "SLEEP %s \r\n";
 
 const char* app_usage=
-    "%s"
-    "\r\n"
+    "%s\r\n"
     "Usage: SLEEP [/V] [/H] <NUMBER>\r\n"
     "Pause for NUMBER seconds.\r\n"
     "\r\n"
@@ -59,8 +58,13 @@ static void exit() {
   DosCall(0, &regs, REGS_MAIN, REGS_NONE);
 }
 
+static char* version() {
+  sprintf(pbuffer, app_version, TOOLS_VERSION);
+  return pbuffer;
+}
+
 static void usage () {
-  printf(app_usage, app_version);
+  printf(app_usage, version());
   exit();
 }
 
@@ -88,7 +92,7 @@ static void time_check() {
 }
 
 static void sleep (unsigned long seconds) {
-  vprintf(app_version);
+  vprintf(version());
   GetTime(&time);
   GetDate(&date);
   sprintf(pbuffer, "Started at: %i-%i-%i %i:%i:%i\r\n", date.year, date.month, date.day, time.hour, time.min, time.sec);
