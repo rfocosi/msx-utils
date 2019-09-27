@@ -1,0 +1,16 @@
+#!/bin/bash
+
+SRC_FILE=$1
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <source_file>.c"
+  exit 1
+fi
+
+sdcc --code-loc 0x180 --data-loc 0 -mz80 --disable-warning 196 --no-std-crt0 $SDCC_LIB_Z80/crt0_msxdos_advanced.rel $SDCC_LIB_Z80/printf.rel $SDCC_LIB_Z80/putchar_msxdos.rel asm.lib fusion.lib $SRC_FILE
+
+IHX_FILE=`echo $SRC_FILE | sed 's/\.c//g'`.ihx
+
+hex2bin -e com $IHX_FILE
+
+rm *.lk *.lst *.map *.noi *.sym

@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  sdcc-fusion-c:
+    build: .
+    volumes:
+      - ./workspace:/workspace
