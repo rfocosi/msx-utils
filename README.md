@@ -39,3 +39,11 @@ sleep.params
 ```
 
 Ps.: You can use the environment variables on `.params` file.
+
+### Extra libs
+If you need extra libs to your project, add then on directories:
+
+```
+./share/include
+./share/lib
+```
