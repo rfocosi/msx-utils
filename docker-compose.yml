@@ -2,8 +2,8 @@ version: '3'
 
 services:
   sdcc:
-    build: .
+    image: rfocosi/msx-sdcc-toolchain:1.0
     volumes:
-      - ./workspace:/workspace
-      - ./share/lib:/extra-lib
-      - ./share/include:/extra-include
+      - ${PROJECT_WORKSPACE}:/workspace
+      - ${PROJECT_EXTRA_LIBS}:/extra-lib
+      - ${PROJECT_EXTRA_INCLUDES}:/extra-include
