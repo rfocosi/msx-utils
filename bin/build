@@ -3,7 +3,7 @@
 SRC_FILE_PATH=$1
 
 if [ -z "$SRC_FILE_PATH" ]; then
-  echo "Usage: $0 <source_file_path>.c"
+  echo "Usage: `basename $0` <source_file_path>.c"
   exit 1
 fi
 
@@ -18,18 +18,20 @@ SRC_FILE=`basename $SRC_FILE_PATH`
 cd $SRC_PATH
 
 FILE_NAME=`echo $SRC_FILE | sed 's/\.c//g'`
+SRC_FILE_PARAMS=`grep '^.\+' $FILE_NAME.params | head -n 1 | envsubst`
 IHX_FILE=$FILE_NAME.ihx
 COM_FILE=$FILE_NAME.com
 
 rm -f $COM_FILE
 
-sdcc --code-loc 0x180 --data-loc 0 -mz80 --disable-warning 196 --no-std-crt0 $SDCC_LIB_Z80/crt0_msxdos_advanced.rel $SDCC_LIB_Z80/printf.rel $SDCC_LIB_Z80/putchar_msxdos.rel asm.lib fusion.lib $SRC_FILE
-
+sdcc $SRC_FILE_PARAMS $SRC_FILE
 
 if [ -f "$IHX_FILE" ]; then
   hex2bin -e com $IHX_FILE
 
-  mv $COM_FILE bin/
+  mkdir -p $WORKSPACE_ROOT/bin/
+
+  mv $COM_FILE $WORKSPACE_ROOT/bin/
 fi
 
 rm -f $FILE_NAME.rel $FILE_NAME.asm

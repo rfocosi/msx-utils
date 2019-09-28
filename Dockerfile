@@ -8,19 +8,11 @@ ARG SDCC_LIB_PATH=/usr/share/sdcc
 ENV SDCC_INCLUDE=${SDCC_LIB_PATH}/include
 ENV SDCC_LIB=${SDCC_LIB_PATH}/lib
 ENV SDCC_LIB_Z80=${SDCC_LIB}/z80
+ENV WORKSPACE_ROOT=/workspace
 
 ARG Z80_LIB=${SDCC_LIB_Z80}/z80.lib
 
-RUN apt-get update && apt-get install -y make sdcc
-
-# RUN apt-get update && apt-get install -y build-essential gputils texinfo libboost-dev zlib1g-dev make bison flex bzip2
-# RUN mkdir -p /usr/src/
-# ADD sdcc-src/sdcc-src-3.9.0.tar.bz2 /usr/src/
-# WORKDIR /usr/src/sdcc-3.9.0
-#RUN ./configure --prefix=/usr && \
-#    make && \
-#    make install && \
-#    rm -rf /usr/src/sdcc
+RUN apt-get update && apt-get install -y make sdcc gettext-base
 
 RUN sdar -d $Z80_LIB printf.rel && \
     sdar -d $Z80_LIB sprintf.rel && \
@@ -40,8 +32,8 @@ RUN mkdir -p $SDCC_INCLUDE/z80
 ADD fusion-c/fusion-c-lib.tar.bz2 $SDCC_LIB/z80/
 ADD fusion-c/fusion-c-include.tar.bz2 $SDCC_INCLUDE/z80/
 
-RUN mkdir /workspace
+RUN mkdir $WORKSPACE_ROOT
 
-WORKDIR /workspace
+WORKDIR ${WORKSPACE_ROOT}
 
 CMD ["tail", "-f", "/dev/null"]
