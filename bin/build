@@ -29,9 +29,14 @@ sdcc $SRC_FILE_PARAMS $SRC_FILE
 if [ -f "$IHX_FILE" ]; then
   hex2bin -e com $IHX_FILE
 
-  mkdir -p $WORKSPACE_ROOT/bin/
+  BIN_PATH=$WORKSPACE_ROOT/bin/
 
-  mv $COM_FILE $WORKSPACE_ROOT/bin/
+  mkdir -p $BIN_PATH
+
+  mv $COM_FILE $BIN_PATH
+
+  echo
+  echo "Final file: $BIN_PATH/$COM_FILE"
 fi
 
 rm -f $FILE_NAME.rel $FILE_NAME.asm
