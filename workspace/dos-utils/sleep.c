@@ -1,14 +1,3 @@
-/*
-Compile with:
-sdcc --code-loc 0x180 --data-loc 0 -mz80 --disable-warning 196 --no-std-crt0 $SDCC_LIB/crt0_msxdos_advanced.rel $SDCC_LIB/printf.rel $SDCC_LIB/putchar_msxdos.rel asm.lib fusion.lib sleep.c
-
-And use:
-hex2bin -e com sleep.ihx
-
-To generate 'sleep.com'
-
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "asm.h"
