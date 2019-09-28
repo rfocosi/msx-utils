@@ -8,6 +8,7 @@ ARG SDCC_LIB_PATH=/usr/share/sdcc
 ENV SDCC_INCLUDE=${SDCC_LIB_PATH}/include
 ENV SDCC_LIB=${SDCC_LIB_PATH}/lib
 ENV SDCC_LIB_Z80=${SDCC_LIB}/z80
+ENV SDCC_INCLUDE_Z80=${SDCC_INCLUDE}/z80
 ENV WORKSPACE_ROOT=/workspace
 
 ARG Z80_LIB=${SDCC_LIB_Z80}/z80.lib
@@ -28,6 +29,8 @@ RUN chmod +x /usr/local/bin/build
 
 RUN mkdir -p $SDCC_LIB/z80
 RUN mkdir -p $SDCC_INCLUDE/z80
+RUN mkdir -p /extra-lib
+RUN mkdir -p /extra-include
 
 ADD fusion-c/fusion-c-lib.tar.bz2 $SDCC_LIB/z80/
 ADD fusion-c/fusion-c-include.tar.bz2 $SDCC_INCLUDE/z80/

@@ -5,3 +5,8 @@ services:
     build: .
     volumes:
       - ./workspace:/workspace
+      - ./share/lib:/extra-lib
+      - ./share/include:/extra-include
+    environment:
+      - EXTRA_SHARED_LIB=/extra-lib
+      - EXTRA_SHARED_INCLUDE=/extra-include

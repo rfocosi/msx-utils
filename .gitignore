@@ -31,3 +31,9 @@
 *.out
 *.app
 *.com
+
+workspace/build
+share/include/*
+share/lib/*
+!share/include/.keep
+!share/lib/.keep
