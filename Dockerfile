@@ -4,7 +4,7 @@ MAINTAINER Roberto Focosi, roberto.focosi@msx2cas.com
 ENV WORKSPACE_ROOT=/workspace
 ARG SDCC_LIB_MAIN_PATH=/usr/share/sdcc
 
-RUN apt-get update && apt-get install -y make sdcc gettext-base
+RUN apt-get update && apt-get install -y make sdcc gettext-base bzip2
 
 ENV SDCC_INCLUDE_MAIN=${SDCC_LIB_MAIN_PATH}/include
 ENV SDCC_LIB_MAIN=${SDCC_LIB_MAIN_PATH}/lib
@@ -21,10 +21,6 @@ RUN sdar -d $Z80_LIB printf.rel && \
     sdar -d $Z80_LIB putchar.rel && \
     sdar -d $Z80_LIB getchar.rel
 
-ADD bin/msx-toolchain-bin.tar.bz2 /usr/local/bin/
-ADD bin/build /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/build
 
 RUN mkdir -p $SDCC_LIB_MAIN/z80 && \
     mkdir -p $SDCC_INCLUDE_MAIN/z80 && \
@@ -32,8 +28,18 @@ RUN mkdir -p $SDCC_LIB_MAIN/z80 && \
     mkdir -p $SDCC_INCLUDE && \
     mkdir -p $WORKSPACE_ROOT
 
-ADD fusion-c/fusion-c-lib.tar.bz2 $SDCC_LIB_MAIN/z80/
-ADD fusion-c/fusion-c-include.tar.bz2 $SDCC_INCLUDE_MAIN/z80/
+ADD https://github.com/rfocosi/msx-utils/raw/master/fusion-c/fusion-c-include.tar.bz2 /tmp/
+RUN tar jxvf /tmp/fusion-c-include.tar.bz2 -C $SDCC_INCLUDE_MAIN/z80/
+
+ADD https://github.com/rfocosi/msx-utils/raw/master/fusion-c/fusion-c-lib.tar.bz2 /tmp/
+RUN tar jxvf /tmp/fusion-c-lib.tar.bz2 -C $SDCC_LIB_MAIN/z80/
+
+ADD https://github.com/rfocosi/msx-utils/raw/master/bin/msx-toolchain-bin.tar.bz2 /tmp/
+RUN tar jxvf /tmp/msx-toolchain-bin.tar.bz2 -C /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/build
+
+RUN rm -rf /tmp/*
 
 WORKDIR ${WORKSPACE_ROOT}
 
