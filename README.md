@@ -22,6 +22,8 @@ Ex.:
 
 `docker-compose run sdcc build dos-utils/sleep.c`
 
+Ps.: The root folder is ./workspace
+
 ### SDCC Parameters
 The SDCC parameters can be added to a `<source_name>.params` file
 
