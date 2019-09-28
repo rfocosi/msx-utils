@@ -22,9 +22,6 @@ SRC_FILE_PARAMS=`grep '^.\+' $FILE_NAME.params | head -n 1 | envsubst`
 IHX_FILE=$FILE_NAME.ihx
 COM_FILE=$FILE_NAME.com
 
-[ ! -z "$EXTRA_SHARED_LIB" ] && [ ! -z "$( ls -1 $EXTRA_SHARED_LIB )" ] && cp $EXTRA_SHARED_LIB/* $SDCC_LIB_Z80/
-[ ! -z "$EXTRA_SHARED_INCLUDE" ] && [ ! -z "$( ls -1 $EXTRA_SHARED_INCLUDE )" ] && cp $EXTRA_SHARED_INCLUDE/* $SDCC_INCLUDE_Z80/
-
 echo "sdcc $SRC_FILE_PARAMS $SRC_FILE"
 echo
 
@@ -35,12 +32,17 @@ if [ -f "$IHX_FILE" ]; then
 
   BIN_PATH=$WORKSPACE_ROOT/build/
 
-  [ ! -d $BIN_PATH ] && mkdir -p $BIN_PATH
+  [ ! -d $BIN_PATH ] && mkdir -p $BIN_PATH && chmod 777 $BIN_PATH
 
-  mv $COM_FILE $BIN_PATH
+  if [ -d "$BIN_PATH" ]; then
+    chmod 777 $COM_FILE
+    mv $COM_FILE $BIN_PATH
+  else
+    BINPATH=""
+  fi
 
   echo
-  echo "Final file: $BIN_PATH$COM_FILE"
+  echo "Final file: build/$COM_FILE"
 fi
 
 rm -f $FILE_NAME.rel $FILE_NAME.asm
