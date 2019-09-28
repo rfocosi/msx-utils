@@ -35,13 +35,10 @@ ADD https://github.com/rfocosi/msx-utils/raw/master/fusion-c/fusion-c-lib.tar.bz
 RUN tar jxvf /tmp/fusion-c-lib.tar.bz2 -C $SDCC_LIB_MAIN/z80/
 
 ADD https://github.com/rfocosi/msx-utils/raw/master/bin/msx-toolchain-bin.tar.bz2 /tmp/
-RUN tar jxvf /tmp/msx-toolchain-bin.tar.bz2 --strip=1 -C /usr/local/bin/
+RUN tar jxvf /tmp/msx-toolchain-bin.tar.bz2 -C /usr/local/bin/
 
 ADD https://github.com/rfocosi/msx-utils/raw/master/bin/hex2bin-2.5.tar.bz2 /tmp/
 RUN tar -jxvf /tmp/hex2bin-2.5.tar.bz2 --strip=1 -C /usr/local/bin/ Hex2bin-2.5/hex2bin Hex2bin-2.5/mot2bin
-
-RUN chmod +x /usr/local/bin/build
-RUN chmod +x /usr/local/bin/info
 
 RUN rm -rf /tmp/*
 
