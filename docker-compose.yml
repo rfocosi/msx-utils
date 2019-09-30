@@ -3,6 +3,8 @@ version: '3'
 services:
   sdcc:
     image: rfocosi/msx-sdcc-toolchain:latest
+    environment:
+      - SDAS_BIN=sdasz80
     volumes:
       - ${PROJECT_WORKSPACE}:/workspace
       - ${PROJECT_EXTRA_LIBS}:/extra-lib
