@@ -33,6 +33,7 @@
 *.com
 
 workspace/build
+workspace/target
 share/include/*
 share/lib/*
 !share/include/.keep
