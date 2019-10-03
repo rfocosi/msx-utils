@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "asm.h"
 #include "msx_fusion.h"
 #include "header/version.h"
@@ -109,6 +110,15 @@ static void sleep (unsigned long seconds) {
   vprintf(pbuffer);
 }
 
+static int isnumber (char* str) {
+  int c = 0;
+  for(c=0; c < sizeof(str); c++) {
+    if (str[c] == '\0') break;
+    if (!isdigit(str[c])) return -1;
+  }
+  return 0;
+}
+
 int main (char** argv, int argc) {
   unsigned long seconds = 0l;
   char paramLetter;
@@ -127,9 +137,17 @@ int main (char** argv, int argc) {
       } else if (paramLetter == 'h') {
         show_help = 1;
       }
-    } else {
+    } else if (isnumber(argv[param]) == 0) {
       seconds = atoi(argv[param]);
+    } else {
+      printf("invalid parameter\r\n");
+      usage ();
     }
+  }
+
+  if (seconds < 1) {
+    printf("Seconds must be greater than 0\r\n");
+    usage ();
   }
 
   if (show_help == 1)
