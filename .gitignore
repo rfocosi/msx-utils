@@ -34,7 +34,3 @@
 
 workspace/build
 workspace/target
-share/include/*
-share/lib/*
-!share/include/.keep
-!share/lib/.keep
