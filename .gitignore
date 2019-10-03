@@ -32,5 +32,6 @@
 *.app
 *.com
 
+!share/**/*
 workspace/build
 workspace/target
