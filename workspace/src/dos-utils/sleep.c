@@ -3,8 +3,8 @@
 #include <ctype.h>
 #include "asm.h"
 #include "msx_fusion.h"
-#include "header/version.h"
 #include "time.h"
+#include "header/version.h"
 
 #define lcase(c) ((c) | 32)
 #define vprintf(msg) if(verbose_mode == 1) { printf(msg); }
