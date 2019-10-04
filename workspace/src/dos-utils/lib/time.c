@@ -1,3 +1,5 @@
+#include "asm.h"
+#include "msx_fusion.h"
 #include "time.h"
 
 unsigned long seconds_in_month(int month, int is_leap_year) {
@@ -16,7 +18,7 @@ unsigned long seconds_in_month(int month, int is_leap_year) {
   return SECS_IN_MONTH_30;
 }
 
-unsigned long long to_seconds(int year, int month, int day, int hour, int minute, int second) {
+extern unsigned long long to_seconds(int year, int month, int day, int hour, int minute, int second) {
   int is_leap_year = ((year & 3) == 0);
   unsigned long long SecondsInYears = (year - EPOCH_YEAR) * (is_leap_year ? SECS_IN_LYEAR : SECS_IN_YEAR);
   unsigned long long SecondsInMonths = month * seconds_in_month(month, is_leap_year);
@@ -31,4 +33,16 @@ unsigned long long to_seconds(int year, int month, int day, int hour, int minute
     SecondsInHours +
     SecondsInMinutes +
     second;
+}
+
+extern void now(DATE *date, TIME *time){
+  GetDate(date);
+  GetTime(time);
+}
+
+extern unsigned long long now_ts() {
+  DATE date;
+  TIME time;
+  now(&date, &time);
+  return to_seconds(date.year, date.month, date.day, time.hour, time.min, time.sec);
 }

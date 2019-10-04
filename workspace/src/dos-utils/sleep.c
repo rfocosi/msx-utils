@@ -2,26 +2,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "asm.h"
-#include "msx_fusion.h"
 #include "time.h"
+#include "util.h"
+#include "msx_fusion.h"
 #include "header/version.h"
-
-#define lcase(c) ((c) | 32)
-#define vprintf(msg) if(verbose_mode == 1) { printf(msg); }
 
 #define BUFFER ((byte*)(0x8000))
 
-static int show_help;
-static int verbose_mode;
-
-static unsigned long long current_seconds = 0l;
-static unsigned long long scheduled_seconds = 0l;
-
 byte* pbuffer = BUFFER;
-
-Z80_registers regs;
-TIME time;
-DATE date;
 
 const char* app_version= "SLEEP %s \r\n";
 
@@ -35,6 +23,7 @@ const char* app_usage=
     "\r\n";
 
 static void exit() {
+  Z80_registers regs;
   DosCall(0, &regs, REGS_MAIN, REGS_NONE);
 }
 
@@ -43,37 +32,34 @@ static char* version() {
   return pbuffer;
 }
 
-static void usage () {
+static void usage() {
   printf(app_usage, version());
   exit();
 }
 
-static void time_check() {
-  GetTime(&time);
-  GetDate(&date);
-  current_seconds = to_seconds(date.year, date.month, date.day, time.hour, time.min, time.sec);
+static void display_date(char* info) {
+  if (verbose_on()) {
+    DATE date;
+    TIME time;
+
+    now(&date, &time);
+    printf("%s %i-%i-%i %i:%i:%i\r\n", info, date.year, date.month, date.day, time.hour, time.min, time.sec);
+  }
 }
 
 static void sleep (unsigned long seconds) {
+  unsigned long long current_seconds = 0l;
+  unsigned long long scheduled_seconds = 0l;
+
   vprintf(version());
-  GetTime(&time);
-  GetDate(&date);
-  sprintf(pbuffer, "Started at: %i-%i-%i %i:%i:%i\r\n", date.year, date.month, date.day, time.hour, time.min, time.sec);
-  vprintf(pbuffer);
-  scheduled_seconds = to_seconds(date.year, date.month, date.day, time.hour, time.min, time.sec) + seconds;
 
-  while (scheduled_seconds > current_seconds) time_check();
-  sprintf(pbuffer, "Finished at: %i-%i-%i %i:%i:%i\r\n", date.year, date.month, date.day, time.hour, time.min, time.sec);
-  vprintf(pbuffer);
-}
+  display_date("Started at:");
 
-static int isnumber (char* str) {
-  int c = 0;
-  for(c=0; c < sizeof(str); c++) {
-    if (str[c] == '\0') break;
-    if (!isdigit(str[c])) return -1;
-  }
-  return 0;
+  scheduled_seconds = now_ts() + seconds;
+
+  while (scheduled_seconds > current_seconds) current_seconds = now_ts();
+
+  display_date("Finished at:");
 }
 
 int main (char** argv, int argc) {
@@ -83,36 +69,33 @@ int main (char** argv, int argc) {
 
   if (argc == 0) {
       printf("too few arguments\r\n");
-      usage ();
+      usage();
   }
 
   for(param=0; param<argc; param++) {
     if(argv[param][0] == '/') {
       paramLetter = lcase(argv[param][1]);
       if(paramLetter == 'v') {
-          verbose_mode = 1;
+          enable_verbose();
       } else if (paramLetter == 'h') {
-        show_help = 1;
+        usage();
       }
-    } else if (isnumber(argv[param]) == 0) {
+    } else if (is_number(argv[param]) == 0) {
       seconds = atoi(argv[param]);
     } else {
       printf("invalid parameter\r\n");
-      usage ();
+      usage();
     }
   }
 
   if (seconds < 1) {
     printf("Seconds must be greater than 0\r\n");
-    usage ();
+    usage();
   }
 
-  if (show_help == 1)
-    usage ();
+  sleep(seconds);
 
-  sleep (seconds);
-
-  exit ();
+  exit();
 
   return 0;
 }
