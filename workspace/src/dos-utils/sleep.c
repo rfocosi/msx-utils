@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "asm.h"
 #include "time.h"
 #include "util.h"
-#include "msx_fusion.h"
 #include "header/version.h"
 
 #define BUFFER ((byte*)(0x8000))
