@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "asm.h"
-#include "time.h"
+#include "timestamp.h"
 #include "util.h"
 #include "header/version.h"
 

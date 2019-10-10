@@ -1,4 +1,4 @@
-#include "msx_fusion.h"
+#include "date_time.h"
 
 extern unsigned long long to_seconds(int year, int month, int day, int hour, int minute, int second);
 
