@@ -1,1 +1,1 @@
-static const unsigned char TOOLS_VERSION[]="v1.1";
+#define TOOLS_VERSION "v1.2"
