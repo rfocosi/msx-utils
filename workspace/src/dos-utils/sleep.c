@@ -37,14 +37,12 @@ static void usage() {
 
 static void display_date(char* info) {
   if (verbose_on()) {
-    DATE date;
-    TIME time;
+    DATE_TIME date_time;
 
-    now(&date, &time);
-    printf("%s %i-%i-%i %i:%i:%i\r\n", info, date.year, date.month, date.day, time.hour, time.min, time.sec);
+    now(&date_time);
+    printf("%s %i-%i-%i %i:%i:%i\r\n", info, date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
   }
 }
-
 static void sleep (unsigned long seconds) {
   unsigned long long current_seconds = 0l;
   unsigned long long scheduled_seconds = 0l;
