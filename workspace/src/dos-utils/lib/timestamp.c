@@ -86,3 +86,45 @@ extern unsigned long long now_ts() {
   now(&date_time);
   return to_seconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
 }
+
+extern void ts_to_date(unsigned long long seconds, DATE_TIME* date_time) {
+    date_time->year = EPOCH_YEAR;
+
+    while(1) {
+        if((!is_leap_year(date_time->year) && seconds < SECS_IN_YEAR) || (is_leap_year(date_time->year) && seconds < SECS_IN_LYEAR)) {
+            break;
+        }
+        seconds -= (is_leap_year(date_time->year) ? SECS_IN_LYEAR : SECS_IN_YEAR);
+        date_time->year++;
+    }
+
+    date_time->month = 1;
+
+    while(seconds > seconds_in_month(date_time->month, date_time->year)) {
+        seconds -= seconds_in_month(date_time->month, date_time->year);
+        date_time->month++;
+    }
+
+    date_time->day = 1;
+
+     while(seconds > SECS_IN_DAY) {
+         seconds -= SECS_IN_DAY;
+         date_time->day++;
+     }
+
+     date_time->hour = 0;
+
+     while(seconds > SECS_IN_HOUR) {
+         seconds -= SECS_IN_HOUR;
+         date_time->hour++;
+     }
+
+     date_time->min = 0;
+
+     while(seconds >= SECS_IN_MINUTE) {
+         seconds -= SECS_IN_MINUTE;
+         date_time->min++;
+     }
+
+     date_time->sec = seconds;
+}
