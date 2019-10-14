@@ -8,17 +8,17 @@
 
 byte* pbuffer = BUFFER;
 
-const char* app_version= "NOW %s\r\n";
+const char* app_version= "now %s\r\n";
 
 const char* app_usage=
     "%s\r\n"
-    "Usage: NOW [/H] [/D] [/T] [/S]\r\n"
+    "Usage: now [/h] [/d] [/t] [/s]\r\n"
     "Show current date and time\r\n"
     "\r\n"
-    "/H: display this help and exit\r\n"
-    "/D: show date\r\n"
-    "/T: show time\r\n"
-    "/S: show seconds from epoch time (1970-01-01)\r\n"
+    "/h: display this help and exit\r\n"
+    "/d: show date\r\n"
+    "/t: show time\r\n"
+    "/s: show seconds from epoch time (1970-01-01)\r\n"
     "\r\n";
 
 static void exit() {

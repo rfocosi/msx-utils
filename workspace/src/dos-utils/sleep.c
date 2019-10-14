@@ -9,15 +9,15 @@
 
 byte* pbuffer = BUFFER;
 
-const char* app_version= "SLEEP %s \r\n";
+const char* app_version= "sleep %s \r\n";
 
 const char* app_usage=
     "%s\r\n"
-    "Usage: SLEEP [/V] [/H] <NUMBER>\r\n"
-    "Pause for NUMBER seconds.\r\n"
+    "Usage: sleep [/v] [/h] <seconds>\r\n"
+    "Sleep for a number of seconds.\r\n"
     "\r\n"
-    "/H: display this help and exit\r\n"
-    "/V: verbose mode\r\n"
+    "/h: display this help and exit\r\n"
+    "/v: verbose mode\r\n"
     "\r\n";
 
 static void exit() {
