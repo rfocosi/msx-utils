@@ -1,13 +1,10 @@
 #include "asm.h"
 #include "unapi.h"
 
-Z80_registers regs;
-unapi_code_block codeBlock;
-
-int buildCodeBlock() {
+int buildCodeBlock(unapi_code_block *codeBlock) {
     int i = UnapiGetCount("TCP/IP");
     if (i > 0) {
-        UnapiBuildCodeBlock(NULL, i, &codeBlock);
+        UnapiBuildCodeBlock(NULL, i, codeBlock);
     }
     return i;
 }
@@ -28,8 +25,10 @@ extern char* code_error_message(int code) {
 }
 
 extern void host(char* hostname, DNS *dns) {
+    Z80_registers regs;
+    unapi_code_block codeBlock;
 
-    if ( buildCodeBlock() == 0 ) {
+    if ( buildCodeBlock(&codeBlock) == 0 ) {
         dns->code = TCPIP_UNAPI_NOT_FOUND;
         return;
     }

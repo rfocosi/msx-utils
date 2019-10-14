@@ -3,6 +3,7 @@
 #include "asm.h"
 #include "timestamp.h"
 #include "util.h"
+#include "unapi.h"
 #include "header/version.h"
 
 #define BUFFER ((byte*)(0x8000))
@@ -16,39 +17,8 @@
 #define TICKS_TO_WAIT (3*50)
 #define SYSTIMER ((uint*)0xFC9E)
 
-enum TcpipUnapiFunctions {
-    TCPIP_GET_CAPAB = 1,
-    TCPIP_DNS_Q = 6,
-    TCPIP_DNS_S = 7,
-    TCPIP_UDP_OPEN = 8,
-    TCPIP_UDP_CLOSE = 9,
-    TCPIP_UDP_STATE = 10,
-    TCPIP_UDP_SEND = 11,
-    TCPIP_UDP_RCV = 12,
-    TCPIP_WAIT = 29
-};
-
-enum TcpipErrorCodes {
-    ERR_OK,
-    ERR_NOT_IMP,
-    ERR_NO_NETWORK,
-    ERR_NO_DATA,
-    ERR_INV_PARAM,
-    ERR_QUERY_EXISTS,
-    ERR_INV_IP,
-    ERR_NO_DNS,
-    ERR_DNS,
-    ERR_NO_FREE_CONN,
-    ERR_CONN_EXISTS,
-    ERR_NO_CONN,
-    ERR_CONN_STATE,
-    ERR_BUFFER,
-    ERR_LARGE_DGRAM,
-    ERR_INV_OPER
-};
-
 const char* app_version=
-    "SNTP %s\r\n"
+    "sntp %s\r\n"
     "for the TCP/IP UNAPI 1.1\r\n";
 
 const char* app_usage=
@@ -82,7 +52,6 @@ char paramLetter;
 uint conn;
 byte* buffer;
 int year;
-long seconds;
 uint timeZoneSeconds;
 uint timeZoneHours;
 uint timeZoneMinutes;
@@ -96,8 +65,8 @@ byte paramsBlock[8];
 
 int IsValidTimeZone(byte* timeZoneString);
 int IsDigit(char theChar);
-void getTime();
-int queryTimeServer();
+unsigned long getTime(DNS *dns);
+unsigned long queryTimeServer(DNS *dns, int *error_code);
 void CheckYear();
 void CloseConnection();
 void Terminate(char* errorMessage);
@@ -143,10 +112,11 @@ char* TimeZoneEnv()
   return (IsValidTimeZone(timeZoneBuffer) ? timeZoneBuffer : "+00:00");
 }
 
-void getTime()
+unsigned long getTime(DNS *dns)
 {
     int queryErrorCode;
     int currentTry;
+    unsigned long seconds = 0;
 
     currentTry = 0;
 
@@ -155,7 +125,7 @@ void getTime()
     do {
         vprintf(".");
         currentTry++;
-        queryErrorCode = queryTimeServer();
+        seconds = queryTimeServer(dns, &queryErrorCode);
     } while (queryErrorCode != 0 && currentTry <= retries);
 
     switch(queryErrorCode) {
@@ -174,15 +144,22 @@ void getTime()
             Terminate("The server returned a \"Kiss of death\" packet\r\n(are you querying the server too often?)");
             break;
     }
+
+    return seconds;
 }
 
-int queryTimeServer()
-{
+unsigned long queryTimeServer(DNS *dns, int *error_code) {
+    unsigned long seconds = 0;
     //* Open a new UDP connection and send request
     *buffer=0x1B;
     for(i=1; i<48; i++) {
         buffer[i]=0;
     }
+
+    paramsBlock[0] = dns->subnet1;
+    paramsBlock[1] = dns->subnet2;
+    paramsBlock[2] = dns->subnet3;
+    paramsBlock[3] = dns->subnet4;
 
     paramsBlock[4] = SNTP_PORT;
     paramsBlock[5] = 0;
@@ -195,7 +172,8 @@ int queryTimeServer()
 
     UnapiCall(&codeBlock, TCPIP_UDP_SEND, &regs, REGS_MAIN, REGS_MAIN);
     if(regs.Bytes.A != 0) {
-        return 1;
+        *error_code = 1;
+        return seconds;
     }
 
     //* Wait for a reply and check that it is correct
@@ -217,15 +195,18 @@ int queryTimeServer()
     } while(regs.Bytes.A == ERR_NO_DATA);
 
     if(regs.Bytes.A != 0) {
-        return 2;
+        *error_code = 2;
+        return 0;
     }
 
     if(regs.UWords.BC < 48) {
-        return 3;
+        *error_code = 3;
+        return 0;
     }
 
     if(buffer[1] == 0) {
-        return 4;
+        *error_code = 4;
+        return 0;
     }
 
     vprintf(strOK);
@@ -234,7 +215,12 @@ int queryTimeServer()
         printf("WARNING: Error returned by server: clock is not synchronized\r\n");
     }
 
-    return 0;
+    ((byte*)&seconds)[0]=buffer[43];
+    ((byte*)&seconds)[1]=buffer[42];
+    ((byte*)&seconds)[2]=buffer[41];
+    ((byte*)&seconds)[3]=buffer[40];
+
+    return seconds;
 }
 
 int IsValidTimeZone(byte* timeZoneString)
@@ -328,7 +314,9 @@ int main(char** argv, int argc)
     int skipNext;
     char* timeZoneString;
     char* timeServerString;
+    unsigned long long seconds;
     DATE_TIME date_time;
+    DNS dns;
 
     //* Initialize variables
     skipNext = 0;
@@ -385,9 +373,8 @@ int main(char** argv, int argc)
         Terminate("No time server specified and no TIMESERVER environment item was found.");
     }
 
-    if(verbose) {
-        printf("Time server is: %s\r\n", timeServerString);
-    }
+    sprintf(pbuffer, "Time server is: %s\r\n", timeServerString);
+    vprintf(pbuffer);
 
     initializeCodeBlock();
 
@@ -413,85 +400,38 @@ int main(char** argv, int argc)
     }
     conn = regs.Bytes.B;
 
-    //* Resolve the host name
+    host(timeServerString, &dns);
 
-    vprintf("Resolving host name... ");
+    sprintf(pbuffer, "OK, %i.%i.%i.%i\r\n", dns.subnet1, dns.subnet2, dns.subnet3, dns.subnet4);
+    vprintf(pbuffer);
 
-    regs.Words.HL = (int)timeServerString;
-    regs.Bytes.B = 0;
-    UnapiCall(&codeBlock, TCPIP_DNS_Q, &regs, REGS_MAIN, REGS_MAIN);
-    if(regs.Bytes.A == ERR_NO_NETWORK) {
-        Terminate(strNoNetwork);
-    } else if(regs.Bytes.A == ERR_NO_DNS) {
-        Terminate("There are no DNS servers configured");
-    } else if(regs.Bytes.A == ERR_NOT_IMP) {
-        Terminate("This TCP/IP UNAPI implementation does not support resolving host names.\r\nSpecify an IP address instead.");
-    } else if(regs.Bytes.A != (byte)ERR_OK) {
-        sprintf(buffer, "Unknown error when resolving the host name (code %i)", regs.Bytes.A);
-        Terminate(buffer);
-    }
+    seconds = getTime(&dns);
 
-    do {
-        UnapiCall(&codeBlock, TCPIP_WAIT, &regs, REGS_NONE, REGS_NONE);
-        regs.Bytes.B = 0;
-        UnapiCall(&codeBlock, TCPIP_DNS_S, &regs, REGS_MAIN, REGS_MAIN);
-    } while (regs.Bytes.A == 0 && regs.Bytes.B == 1);
+    printf("Seconds: %s", tstoa(seconds));
+    CloseConnection();
 
-    if(regs.Bytes.A != 0) {
-        if(regs.Bytes.B == 2) {
-            Terminate("DNS server failure");
-        } else if(regs.Bytes.B == 3) {
-            Terminate("Unknown host name");
-        } else if(regs.Bytes.B == 5) {
-            Terminate("DNS server refused the query");
-        } else if(regs.Bytes.B == 16 || regs.Bytes.B == 17) {
-            Terminate("DNS server did not reply");
-        } else if(regs.Bytes.B == 19) {
-            Terminate(strNoNetwork);
-        } else if(regs.Bytes.B == 0) {
-            Terminate("DNS query failed");
-        } else {
-            sprintf(buffer, "Unknown error returned by DNS server (code %i)", regs.Bytes.B);
-            Terminate(buffer);
-        }
-    }
+    exit();
 
-    paramsBlock[0] = regs.Bytes.L;
-    paramsBlock[1] = regs.Bytes.H;
-    paramsBlock[2] = regs.Bytes.E;
-    paramsBlock[3] = regs.Bytes.D;
+    ts_to_date(seconds, &date_time);
 
-    if(verbose) {
-        printf("OK, %i.%i.%i.%i\r\n", paramsBlock[0], paramsBlock[1], paramsBlock[2], paramsBlock[3]);
-    }
+    printf("Ok 3");
+    CheckYear();
 
-    getTime();
-
-    //* Parse the obtained time and add the time zone offset
-
-    ((byte*)&seconds)[0]=buffer[43];
-    ((byte*)&seconds)[1]=buffer[42];
-    ((byte*)&seconds)[2]=buffer[41];
-    ((byte*)&seconds)[3]=buffer[40];
-
-    if(verbose) {
-        ts_to_date(seconds, &date_time);
-        CheckYear();
-        printf("Time returned by time server: %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
-    }
+    printf("Ok 4");
+    sprintf(pbuffer, "Time returned by time server: %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
+    vprintf(pbuffer);
 
     seconds += timeZoneSeconds;
 
     ts_to_date(seconds, &date_time);
     CheckYear();
-    if(verbose && timeZoneString != NULL) {
-        printf("Time adjusted to time zone:   %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
-    }
+    sprintf(pbuffer, "Time adjusted to time zone:   %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
+    vprintf(pbuffer);
 
     //* Change the MSX clock if necessary
 
     if(displayOnly) {
-        if(!verbose) {
+        if(!verbose_on()) {
             printf("Time obtained from time server: %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
         }
     } else {
@@ -511,7 +451,7 @@ int main(char** argv, int argc)
             Terminate("Invalid time for the MSX clock");
         }
 
-        if(verbose) {
+        if(!verbose_on()) {
             printf("The clock has been set to the adjusted time.");
         } else {
             printf("The clock has been set to: %i-%i-%i, %i:%i:%i\r\n", date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
