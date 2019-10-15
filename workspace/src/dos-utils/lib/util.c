@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <string.h>
 
 int verbose_mode;
 
@@ -12,7 +13,7 @@ extern void enable_verbose() {
 
 extern int is_number (char* str) {
   int c = 0;
-  for(c=0; c < sizeof(str); c++) {
+  for(c=0; c < strlen(str); c++) {
     if (str[c] == '\0') break;
     if (!isdigit(str[c])) return 0;
   }
