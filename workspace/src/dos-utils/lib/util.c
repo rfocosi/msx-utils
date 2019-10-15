@@ -14,7 +14,7 @@ extern int is_number (char* str) {
   int c = 0;
   for(c=0; c < sizeof(str); c++) {
     if (str[c] == '\0') break;
-    if (!isdigit(str[c])) return -1;
+    if (!isdigit(str[c])) return 0;
   }
-  return 0;
+  return 1;
 }

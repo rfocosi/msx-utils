@@ -35,27 +35,28 @@ static void usage() {
     exit();
 }
 
-static void display_date(char* info) {
+static void display_date(char* info, unsigned long ts) {
     if (verbose_on()) {
         DATE_TIME date_time;
 
-        now(&date_time);
+        ts_to_date(ts, &date_time);
         printf("%s %i-%i-%i %i:%i:%i\r\n", info, date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
     }
 }
 static void sleep (unsigned long seconds) {
     unsigned long long current_seconds = 0l;
     unsigned long long scheduled_seconds = 0l;
+    unsigned long now = now_ts();
 
     vprintf(version());
 
-    display_date("Started at:");
+    display_date("Started at:", now);
 
-    scheduled_seconds = now_ts() + seconds;
+    scheduled_seconds = now + seconds;
 
     while (scheduled_seconds > current_seconds) current_seconds = now_ts();
 
-    display_date("Finished at:");
+    display_date("Finished at:", current_seconds);
 }
 
 int main (char** argv, int argc) {
@@ -76,7 +77,7 @@ int main (char** argv, int argc) {
             } else if (paramLetter == 'h') {
                 usage();
             }
-        } else if (is_number(argv[param]) == 0) {
+        } else if (is_number(argv[param])) {
             seconds = atoi(argv[param]);
         } else {
             printf("invalid parameter\r\n");
