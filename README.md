@@ -8,37 +8,20 @@ Small applications to use with MSX
 
 ## How to use
 
-### Setup
-Before start, build the container:
-
-`docker-compose build`
-
 ### Running
 To build a source file, run:
 
-`docker-compose run sdcc build <source.c>`
+`docker-compose run --rm sdcc build <source.c>`
 
 Ex.:
 
-`docker-compose run sdcc build dos-utils/sleep.c`
+`docker-compose run --rm sdcc build dos-utils/sleep.c`
 
 Ps.: The root folder is ./workspace
 
-### SDCC Parameters
-The SDCC parameters can be added to a `<source_name>.params` file
+For more information:
 
-Ex.:
-
-```
-> ls
-sleep.c
-sleep.params
-
-> cat sleep.params
---code-loc 0x180 --data-loc 0 -mz80 --disable-warning 196 --no-std-crt0 $SDCC_LIB_Z80/crt0_msxdos_advanced.rel $SDCC_LIB_Z80/printf.rel $SDCC_LIB_Z80/putchar_msxdos.rel asm.lib fusion.lib
-```
-
-Ps.: You can use the environment variables on `.params` file.
+https://hub.docker.com/r/rfocosi/msx-sdcc-toolchain
 
 ### Extra libs
 If you need extra libs to your project, add then on directories:
@@ -47,3 +30,12 @@ If you need extra libs to your project, add then on directories:
 ./share/include
 ./share/lib
 ```
+
+# Credits
+
+Some sources are based on:
+- Konamiman's repository: https://github.com/Konamiman/
+- Oduvaldo's repository: https://github.com/ducasp/
+- Fusion-C lib: http://www.ebsoft.fr/shop/es/home/66-fusion-c.html
+
+If your work is here too, tell me and I'll add you on the credits :)
