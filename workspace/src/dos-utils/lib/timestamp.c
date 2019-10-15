@@ -46,7 +46,7 @@ unsigned long years_seconds(int current_year) {
     return seconds;
 }
 
-extern unsigned long long to_seconds(int year, int month, int day, int hour, int minute, int second) {
+extern unsigned long to_seconds(int year, int month, int day, int hour, int minute, int second) {
   return
     (years_seconds(year)) +
     (months_seconds(month, year)) +
@@ -70,13 +70,13 @@ extern void now(DATE_TIME *date_time){
   date_time->sec = time.sec;
 }
 
-extern unsigned long long now_ts() {
+extern unsigned long now_ts() {
   DATE_TIME date_time;
   now(&date_time);
   return to_seconds(date_time.year, date_time.month, date_time.day, date_time.hour, date_time.min, date_time.sec);
 }
 
-extern void ts_to_date(unsigned long long seconds, DATE_TIME* date_time) {
+extern void ts_to_date(unsigned long seconds, DATE_TIME* date_time) {
     date_time->year = EPOCH_YEAR;
 
     while(1) {
