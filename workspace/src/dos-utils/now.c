@@ -8,7 +8,7 @@
 
 byte* pbuffer = BUFFER;
 
-const char* app_version= "now %s\r\n";
+const char* app_version= "NOW %s\r\n";
 
 const char* app_usage=
     "%s\r\n"
